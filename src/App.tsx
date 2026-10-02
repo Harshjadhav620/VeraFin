@@ -35,7 +35,7 @@ export default function App() {
       <StarBackground />
       <TopNav active={activeTab} onSelect={setPage} />
 
-      <div className="mx-auto w-full max-w-6xl">
+      <div className="mx-auto w-full max-w-7xl">
         {page === "home" && <HomePage onSelectOption={handleOption} />}
         {page === "paste" && <PasteMessagePage onBack={goHome} />}
         {page === "upload" && <ComingSoonPage title="Upload Screenshot" />}
