@@ -1,0 +1,38 @@
+
+@import "tailwindcss";
+
+@theme {
+  --color-brand: #4f8cff;
+  --color-brand-soft: #2d4a8a;
+  --color-ink: #e8edff;
+  --color-muted: #8d9abf;
+  --color-line: #222c47;
+  --color-surface: #0a0e1a;
+  --color-card: #121829;
+  --font-sans: "Inter", system-ui, sans-serif;
+}
+
+/* LIGHT THEME (to switch back, put these values in the block above)
+   brand #1f5fe0 | brand-soft #9db8ee | ink #0f1d40 | muted #6a7899
+   line #e1e8f5 | surface #f7faff | card #ffffff */
+
+body {
+  @apply bg-surface font-sans text-ink;
+  background-image:
+    radial-gradient(60rem 30rem at 85% -10%, rgba(79, 140, 255, 0.18), transparent 60%),
+    radial-gradient(40rem 25rem at 0% 100%, rgba(34, 193, 195, 0.1), transparent 60%);
+  background-attachment: fixed;
+}
+
+/* Light theme overrides (applied when data-theme="light") */
+:root[data-theme="light"] {
+  --color-brand-soft: #9db8ee;
+  --color-ink: #0f1d40;
+  --color-muted: #5b6a8c;
+  --color-line: #d9e2f3;
+  --color-surface: #f4f7ff;
+  --color-card: #ffffff;
+}
+:root[data-theme="light"] .star-bg {
+  display: none;
+}
