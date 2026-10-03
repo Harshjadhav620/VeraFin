@@ -9,6 +9,7 @@ import ComingSoonPage from "./pages/ComingSoonPage";
 import { useAppearance } from "./hooks/useAppearance";
 import type { InputOption, NavTab, Page } from "./types";
 import UploadPage from "./pages/UploadPage";
+import HistoryPage from "./pages/HistoryPage";
 
 export default function App() {
   const [page, setPage] = useState<Page>("home");
@@ -35,10 +36,10 @@ export default function App() {
       <TopNav active={activeTab} onSelect={setPage} />
 
       <div className="mx-auto w-full max-w-7xl">
-        {page === "home" && <HomePage onSelectOption={handleOption} />}
+        {page === "home" && <HomePage onSelectOption={handleOption} onViewAll={() => setPage("history")} />}
         {page === "paste" && <PasteMessagePage onBack={goHome} />}
         {page === "upload" && <UploadPage onBack={goHome} />}
-        {page === "history" && <ComingSoonPage title="History" />}
+        {page === "history" && <HistoryPage onGoHome={goHome} />}
         {page === "learn" && <ComingSoonPage title="Learn" />}
         {page === "settings" && <SettingsPage appearance={appearance} />}
       </div>

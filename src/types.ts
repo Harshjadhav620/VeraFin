@@ -1,6 +1,7 @@
 export type Page = NavTab | "paste";
 export type NavTab = "home" | "history" | "learn" | "settings";
 export type RiskLevel = "high" | "medium" | "low";
+export type HistoryType = "text" | "image";
 
 export interface InputOption {
   id: "upload" | "paste" | "voice";
@@ -19,4 +20,12 @@ export interface RecentCheck {
 export interface NewsItem {
   source: string;
   text: string;
+}
+
+export interface HistoryItem {
+  id: number;
+  title: string;
+  type: HistoryType;
+  risk: RiskLevel;
+  createdAt: string; // ISO date string
 }

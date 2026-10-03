@@ -1,4 +1,4 @@
-import type { InputOption, NavTab, NewsItem, RecentCheck } from "../types";
+import type { HistoryItem, InputOption, NavTab, NewsItem, RecentCheck } from "../types";
 
 export const NAV_TABS: { id: NavTab; icon: string; label: string }[] = [
   { id: "home", icon: "🏠", label: "Home" },
@@ -32,3 +32,14 @@ export const SCAM_FACTS: string[] = [
 ];
 
 export const RISK_LABEL = { high: "High Risk", medium: "Medium Risk", low: "Low Risk" } as const;
+
+const hoursAgo = (h: number): string => new Date(Date.now() - h * 3_600_000).toISOString();
+
+export const SAMPLE_HISTORY: HistoryItem[] = [
+  { id: 1, title: "SEBI approved investment scheme", type: "image", risk: "high", createdAt: hoursAgo(1) },
+  { id: 2, title: "Free stock tips", type: "text", risk: "medium", createdAt: hoursAgo(3) },
+  { id: 3, title: "Government scheme for farmers", type: "image", risk: "low", createdAt: hoursAgo(27) },
+  { id: 4, title: "Work from home investment", type: "text", risk: "high", createdAt: hoursAgo(29) },
+  { id: 5, title: "Mutual fund returns", type: "text", risk: "low", createdAt: hoursAgo(75) },
+  { id: 6, title: "Crypto investment opportunity", type: "image", risk: "medium", createdAt: hoursAgo(100) },
+];

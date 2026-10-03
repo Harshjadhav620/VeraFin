@@ -1,22 +1,20 @@
-import type { RecentCheck, RiskLevel } from "../types";
+import type { RecentCheck } from "../types";
 import { RISK_LABEL } from "../data/content";
+import { RISK_STYLE } from "../data/risk";
 
 interface Props {
   items: RecentCheck[];
+  onViewAll: () => void;
 }
 
-const RISK_STYLE: Record<RiskLevel, string> = {
-  high: "bg-red-500/15 text-red-400",
-  medium: "bg-amber-500/15 text-amber-400",
-  low: "bg-green-500/15 text-green-400",
-};
-
-export default function RecentChecks({ items }: Props) {
+export default function RecentChecks({ items, onViewAll }: Props) {
   return (
     <section>
       <div className="mt-6 flex justify-between text-[15px] font-bold">
         Recent Checks
-        <a href="#" className="text-xs font-medium text-brand">View All</a>
+        <button onClick={onViewAll} className="text-xs font-medium text-brand hover:underline">
+          View All
+        </button>
       </div>
       {items.map((c) => (
         <div
