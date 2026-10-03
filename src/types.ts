@@ -1,5 +1,5 @@
-export type Page = NavTab | "paste";
 export type NavTab = "home" | "history" | "learn" | "settings";
+export type Page = NavTab | "paste" | "upload";
 export type RiskLevel = "high" | "medium" | "low";
 export type HistoryType = "text" | "image";
 
