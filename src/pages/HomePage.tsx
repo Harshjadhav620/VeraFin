@@ -13,24 +13,28 @@ interface Props {
 export default function HomePage({ onSelectOption }: Props) {
   return (
     <main className="grid grid-cols-2 items-start gap-16 px-10 py-16 max-md:grid-cols-1 max-md:gap-0 max-md:px-4.5 max-md:py-5 max-md:pb-24">
-      {/* Left: intro + options */}
+    
       <section>
         <div className="hidden max-md:block"><Logo /></div>
         <h1 className="bg-linear-to-r from-heading to-brand bg-clip-text text-5xl font-bold leading-tight text-transparent max-md:mt-5 max-md:text-2xl">Hi there!</h1>
         <p className="mt-4 text-lg leading-relaxed text-muted max-md:mt-1.5 max-md:text-[13px]">
           <b>Verify Before You Trust.</b>
           <br />
-          Upload a screenshot, paste a message, or ask by voice to check if a financial claim is safe or suspicious.
+          Upload a screenshot or paste a message to check if a financial claim is safe or suspicious.
         </p>
 
-        <div className="mt-6 max-md:mt-2">
+        <div className="grid grid-cols-2 gap-3 mt-15 max-md:mt-2">
           {INPUT_OPTIONS.map((o) => (
             <OptionCard key={o.id} option={o} onClick={() => onSelectOption(o.id)} />
           ))}
         </div>
+
+        <div className="mt-20 rounded-2xl border border-line bg-card/60 backdrop-blur-sm p-7">
+        <h2 className="text-lg font-bold py-4">About VeraFin:</h2>
+        <p className="text-sm leading-relaxed text-muted">"VeraFin is an AI-powered safety companion for first-time and retail investors. Paste a message or upload a screenshot, and it points out the warning signs of a scam, picks out the claims being made, and explains in simple language why something may be risky. It then shows what you should verify with official sources before acting. VeraFin never gives stock tips or investment advice. It simply helps you pause, check and decide with confidence."</p>
+        </div>
       </section>
 
-      {/* Right: compact logo card + recent checks */}
       <section>
         <div className="max-md:hidden"><HeroLogo /></div>
         <RecentChecks items={RECENT_CHECKS} />

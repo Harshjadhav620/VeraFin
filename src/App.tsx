@@ -8,12 +8,12 @@ import SettingsPage from "./pages/SettingsPage";
 import ComingSoonPage from "./pages/ComingSoonPage";
 import { useAppearance } from "./hooks/useAppearance";
 import type { InputOption, NavTab, Page } from "./types";
+import UploadPage from "./pages/UploadPage";
 
 export default function App() {
   const [page, setPage] = useState<Page>("home");
-  const appearance = useAppearance(); // applies theme, text size and accent on startup
+  const appearance = useAppearance(); 
 
-  // always open a new page from the top
   useEffect(() => {
     window.scrollTo({ top: 0 });
   }, [page]);
@@ -21,11 +21,10 @@ export default function App() {
   const handleOption = (id: InputOption["id"]): void => {
     if (id === "paste") setPage("paste");
     if (id === "upload") setPage("upload");
-    if (id === "voice") setPage("voice");
   };
 
-  // Paste, Upload and Voice are part of the Home flow, so Home stays highlighted
-  const isHomeFlow = page === "paste" || page === "upload" || page === "voice";
+  
+  const isHomeFlow = page === "paste" || page === "upload";
   const activeTab: NavTab = isHomeFlow ? "home" : (page as NavTab);
 
   const goHome = (): void => setPage("home");
@@ -38,8 +37,7 @@ export default function App() {
       <div className="mx-auto w-full max-w-7xl">
         {page === "home" && <HomePage onSelectOption={handleOption} />}
         {page === "paste" && <PasteMessagePage onBack={goHome} />}
-        {page === "upload" && <ComingSoonPage title="Upload Screenshot" />}
-        {page === "voice" && <ComingSoonPage title="Ask by Voice" />}
+        {page === "upload" && <UploadPage onBack={goHome} />}
         {page === "history" && <ComingSoonPage title="History" />}
         {page === "learn" && <ComingSoonPage title="Learn" />}
         {page === "settings" && <SettingsPage appearance={appearance} />}

@@ -10,6 +10,7 @@
   --color-surface: #0a0e1a;
   --color-card: #121829;
   --font-sans: "Inter", system-ui, sans-serif;
+  --color-heading: #ffffff;
 }
 
 /* LIGHT THEME (to switch back, put these values in the block above)
@@ -32,6 +33,7 @@ body {
   --color-line: #d9e2f3;
   --color-surface: #f4f7ff;
   --color-card: #ffffff;
+  --color-heading: #0f1d40;
 }
 :root[data-theme="light"] .star-bg {
   display: none;

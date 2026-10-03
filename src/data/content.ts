@@ -10,8 +10,7 @@ export const NAV_TABS: { id: NavTab; icon: string; label: string }[] = [
 export const INPUT_OPTIONS: InputOption[] = [
   { id: "upload", title: "Upload Screenshot", description: "Check images, chats, posts", color: "#2b6be8", icon: "📷" },
   { id: "paste", title: "Paste Message", description: "Type or copy text", color: "#5c5fd6", icon: "📝" },
-  { id: "voice", title: "Ask by Voice", description: "Speak your query", color: "#2457d6", icon: "🎤" },
-];
+  ];
 
 export const RECENT_CHECKS: RecentCheck[] = [
   { id: 1, title: "SEBI approved investment scheme", risk: "high" },
