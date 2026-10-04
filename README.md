@@ -11,7 +11,7 @@ VeraFin is a frontend prototype for helping first-time and retail investors paus
 - Settings screen with appearance, account, security, notification, support, and preference sections.
 - Responsive navigation and dark/light/system appearance options.
 
-The paste-message screen uses the `useAnalyzeMessage` hook and Axios to send the entered text as JSON (`{ "message": "..." }`) to `POST http://localhost:5000/api/test/message`, then displays the response. The API must be running locally for this action to work. Screenshot analysis is not connected to a backend yet and still shows a placeholder message. Recent checks and safety advisories use sample content. History and appearance preferences are stored in browser `localStorage` on the current device.
+The paste-message screen uses the `useAnalyzeMessage` hook and Axios to send the entered text as JSON (`{ "message": "..." }`) to `${VITE_API_BASE_URL}/api/verification/run`. The result page shows the returned risk assessment, claims, recommendations, evidence limitations, and the full response. Screenshot analysis still uses local mock data. Recent checks and safety advisories use sample content. History and appearance preferences are stored in browser `localStorage` on the current device.
 
 ## Tech stack
 
@@ -29,6 +29,14 @@ Install the dependencies and start the development server:
 npm install
 npm run dev
 ```
+
+The local backend URL is configured in `.env.local`:
+
+```env
+VITE_API_BASE_URL=http://localhost:5000
+```
+
+Vite exposes `VITE_` variables to browser code, so do not put secrets in this file. Restart the development server after changing environment variables.
 
 Vite prints the local development URL in the terminal.
 
@@ -55,4 +63,4 @@ src/
 └── types.ts          # Shared TypeScript domain types
 ```
 
-Navigation is currently handled in app state rather than URL-based routing. To connect message or image analysis, implement the backend integration in the corresponding paste/upload flow and replace the current placeholder action.
+Navigation is currently handled in app state rather than URL-based routing. Message submission uses the configured backend URL; the displayed message analysis and screenshot analysis remain local prototypes.

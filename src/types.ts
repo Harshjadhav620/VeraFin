@@ -37,6 +37,48 @@ export interface RiskIndicator {
   severity: RiskLevel;
 }
 
+export interface VerificationResponse {
+  input?: {
+    text?: string;
+    message?: string;
+    claims?: { claim: string; claim_type?: string; subject?: string }[];
+    entities?: { name: string; type: string }[];
+    links?: { url: string; domain?: string }[];
+    riskSignals?: { indicator: string; evidence: string; severity: string }[];
+  };
+  analysis?: {
+    assessments?: {
+      claim: string;
+      claimType?: string;
+      status: string;
+      explanation: string;
+      evidenceIds?: string[];
+    }[];
+  };
+  retrieval?: {
+    mode?: string;
+    results?: { queryId: string; outcome: string; source?: string; evidence?: unknown[] }[];
+  };
+  riskAssessment?: {
+    score?: number;
+    level?: string;
+    factors?: { name: string; description: string; points: number; source?: string }[];
+    limitations?: string[];
+    interpretation?: string;
+  };
+  explanation?: {
+    summary?: string;
+    risk?: { level?: string; score?: number };
+    reasons?: string[];
+    claims?: { claim: string; status: string; explanation: string; evidenceIds?: string[] }[];
+    evidence?: unknown[];
+    limitations?: string[];
+    recommendedActions?: string[];
+    notice?: string;
+  };
+  [key: string]: unknown;
+}
+
 export interface AnalysisResult {
   id: number;
   title: string;
@@ -48,4 +90,5 @@ export interface AnalysisResult {
   extractedText: string;
   advice: string[];
   createdAt: string; // ISO date string
+  verification?: VerificationResponse;
 }

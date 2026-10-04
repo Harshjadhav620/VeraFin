@@ -20,6 +20,10 @@ const SOURCES = [
 const card = "rounded-3xl border border-line bg-card/60 p-5 backdrop-blur-md";
 
 export default function ResultPage({ result, onBack, onViewHistory }: Props) {
+  const verificationClaims = result.verification?.analysis?.assessments ?? result.verification?.explanation?.claims ?? [];
+  const reasons = result.verification?.explanation?.reasons ?? [];
+  const limitations = result.verification?.riskAssessment?.limitations ?? result.verification?.explanation?.limitations ?? [];
+
   return (
     <main className="px-10 py-10 max-md:px-4.5 max-md:py-5 max-md:pb-24">
       <PageHeader title="Back to home" onBack={onBack} />
@@ -37,6 +41,11 @@ export default function ResultPage({ result, onBack, onViewHistory }: Props) {
         {/* Left column */}
         <section className="space-y-5">
           <RiskBanner risk={result.risk} summary={result.summary} />
+          {result.verification?.riskAssessment?.score !== undefined && (
+            <p className="-mt-3 px-2 text-xs text-muted">
+              Prototype risk score: {result.verification.riskAssessment.score}
+            </p>
+          )}
 
           <div className={card}>
             <h2 className="mb-3 text-[15px] font-bold">🚩 Risk indicators</h2>
@@ -65,14 +74,27 @@ export default function ResultPage({ result, onBack, onViewHistory }: Props) {
               <p className="text-sm text-muted">No specific claims were picked out.</p>
             ) : (
               <div className="space-y-2.5">
-                {result.claims.map((c) => (
-                  <div key={c} className="flex items-center justify-between gap-3 rounded-2xl bg-surface/50 px-4 py-3">
-                    <p className="text-sm italic">“{c}”</p>
-                    <span className="shrink-0 rounded-full bg-amber-500/15 px-2.5 py-0.5 text-[11px] font-semibold text-amber-400">
-                      Unverified
-                    </span>
-                  </div>
-                ))}
+                {result.claims.map((claim) => {
+                  const assessment = verificationClaims.find((item) => item.claim === claim);
+                  const status = assessment?.status ?? "unverified";
+                  const statusStyle = status === "supported"
+                    ? "bg-green-500/15 text-green-400"
+                    : status === "contradicted"
+                      ? "bg-red-500/15 text-red-400"
+                      : "bg-amber-500/15 text-amber-400";
+
+                  return (
+                    <div key={claim} className="rounded-2xl bg-surface/50 px-4 py-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <p className="text-sm italic">“{claim}”</p>
+                        <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-semibold capitalize ${statusStyle}`}>
+                          {status.replaceAll("_", " ")}
+                        </span>
+                      </div>
+                      {assessment?.explanation && <p className="mt-2 text-xs leading-relaxed text-muted">{assessment.explanation}</p>}
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -86,6 +108,24 @@ export default function ResultPage({ result, onBack, onViewHistory }: Props) {
               {result.extractedText}
             </p>
           </div>
+
+          {reasons.length > 0 && (
+            <div className={card}>
+              <h2 className="mb-3 text-[15px] font-bold">🧾 Verification findings</h2>
+              <ul className="space-y-2 text-[13px] leading-relaxed text-muted">
+                {reasons.map((reason) => <li key={reason}>• {reason}</li>)}
+              </ul>
+            </div>
+          )}
+
+          {limitations.length > 0 && (
+            <div className={card}>
+              <h2 className="mb-3 text-[15px] font-bold">Evidence limitations</h2>
+              <ul className="space-y-2 text-[13px] leading-relaxed text-muted">
+                {limitations.map((limitation) => <li key={limitation}>• {limitation}</li>)}
+              </ul>
+            </div>
+          )}
 
           <div className="rounded-3xl border border-amber-500/30 bg-amber-500/10 p-5 backdrop-blur-md">
             <h2 className="mb-3 text-[15px] font-bold">💡 What you should do</h2>
@@ -136,6 +176,15 @@ export default function ResultPage({ result, onBack, onViewHistory }: Props) {
           </div>
         </aside>
       </div>
+
+      {result.verification && (
+        <details className={`${card} mt-6`}>
+          <summary className="cursor-pointer text-sm font-semibold">Full backend verification response</summary>
+          <pre className="mt-4 max-h-[32rem] overflow-auto whitespace-pre-wrap break-words text-xs leading-relaxed text-muted">
+            {JSON.stringify(result.verification, null, 2)}
+          </pre>
+        </details>
+      )}
     </main>
   );
 }

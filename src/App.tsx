@@ -8,7 +8,6 @@ import UploadPage from "./pages/UploadPage";
 import ResultPage from "./pages/ResultPage";
 import HistoryPage from "./pages/HistoryPage";
 import SettingsPage from "./pages/SettingsPage";
-import ComingSoonPage from "./pages/ComingSoonPage";
 import { useAppearance } from "./hooks/useAppearance";
 import { usePersistedState } from "./hooks/usePersistedState";
 import { SAMPLE_HISTORY } from "./data/content";
@@ -55,7 +54,6 @@ export default function App() {
           <ResultPage result={result} onBack={goHome} onViewHistory={() => setPage("history")} />
         )}
         {page === "history" && <HistoryPage items={history} setItems={setHistory} onGoHome={goHome} />}
-        {page === "learn" && <ComingSoonPage title="Learn" />}
         {page === "settings" && <SettingsPage appearance={appearance} />}
       </div>
 

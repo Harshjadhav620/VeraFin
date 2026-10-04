@@ -3,6 +3,9 @@ import PageHeader from "../components/PageHeader";
 import MessageInput from "../components/MessageInput";
 import ScamFooter from "../components/ScamFooter";
 import { SCAM_FACTS, SCAM_NEWS } from "../data/content";
+import { toAnalysisResult } from "../api/verificationResult";
+import { useAnalyzeMessage } from "../hooks/useAnalyzeMessage";
+import type { AnalysisResult } from "../types";
 
 interface Props {
   onBack: () => void;
@@ -17,18 +20,15 @@ const TRUST_CHIPS = ["🚩 Spots red flags", "🗣️ Plain-language results", "
 export default function PasteMessagePage({ onBack, onAnalyzed }: Props) {
   const [text, setText] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
+  const { analyzeMessage, error } = useAnalyzeMessage();
 
   const analyze = async (): Promise<void> => {
     setLoading(true);
     try {
-      // TODO: call your backend, then navigate to the Analysis Result page
-      // const res = await fetch("/api/analyze", {
-      //   method: "POST",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify({ text }),
-      // });
-      await new Promise((r) => setTimeout(r, 800));
-      alert("Analysis page goes here (next screen).");
+      const sent = await analyzeMessage(text);
+      if (!sent) return;
+
+      onAnalyzed(toAnalysisResult(sent, text));
     } finally {
       setLoading(false);
     }
@@ -46,9 +46,9 @@ export default function PasteMessagePage({ onBack, onAnalyzed }: Props) {
           Paste a WhatsApp, Telegram or SMS message below. We’ll look for scam signs and explain them simply.
         </p>
         <div className="mt-4 flex flex-wrap gap-2">
-          {TRUST_CHIPS.map((c) => (
-            <span key={c} className="rounded-full border border-line bg-card/60 px-3 py-1 text-xs text-muted backdrop-blur-sm">
-              {c}
+          {TRUST_CHIPS.map((chip) => (
+            <span key={chip} className="rounded-full border border-line bg-card/60 px-3 py-1 text-xs text-muted backdrop-blur-sm">
+              {chip}
             </span>
           ))}
         </div>
@@ -59,33 +59,22 @@ export default function PasteMessagePage({ onBack, onAnalyzed }: Props) {
           <MessageInput value={text} onChange={setText} />
 
           {error && (
-            <div role="alert" className="mt-4 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
-              {error}
-            </div>
+            <p role="alert" className="mt-4 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+              Could not send the message: {error}
+            </p>
           )}
 
           <button
             onClick={analyze}
-            disabled={!text.trim() || isLoading}
+            disabled={!text.trim() || loading}
             className="mt-4 w-full rounded-full bg-linear-to-r from-brand to-violet-500 py-3.5 text-[15px] font-bold text-white
                        shadow-[0_0_30px_-6px_rgba(124,92,255,0.7)] transition duration-300
                        hover:scale-[1.02] hover:shadow-[0_0_44px_-4px_rgba(124,92,255,0.9)] active:scale-95
                        disabled:cursor-not-allowed disabled:bg-none disabled:bg-disabled disabled:text-muted disabled:shadow-none
                        disabled:hover:scale-100"
           >
-            {isLoading ? "Analyzing…" : "🔍 Analyze Message"}
+            {loading ? "Analyzing…" : "🔍 Analyze Message"}
           </button>
-
-          {error && (
-            <p role="alert" className="mt-4 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
-              Could not send the message: {error}
-            </p>
-          )}
-          {result !== null && (
-            <pre className="mt-4 overflow-x-auto rounded-2xl border border-line bg-card/60 p-4 text-sm text-ink whitespace-pre-wrap">
-              {formattedResult}
-            </pre>
-          )}
 
           <div className="mt-3 flex items-center justify-center gap-5 text-xs">
             <button onClick={() => setText(SAMPLE)} className="text-brand hover:underline">
