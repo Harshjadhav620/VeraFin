@@ -4,6 +4,7 @@ import MessageInput from "../components/MessageInput";
 import ScamFooter from "../components/ScamFooter";
 import { SCAM_FACTS, SCAM_NEWS } from "../data/content";
 import { useAnalyzeMessage } from "../hooks/useAnalyzeMessage";
+import VerificationStatusPage from "./VerificationStatusPage";
 
 interface Props {
   onBack: () => void;
@@ -11,6 +12,9 @@ interface Props {
   initialText: string;
   onTextChange: (text: string) => void;
   onSubmitted: (verificationId: string) => void;
+  verificationId: string | null;
+  onClearVerification: () => void;
+  onViewHistory: () => void;
 }
 
 const SAMPLE =
@@ -18,7 +22,7 @@ const SAMPLE =
 
 const TRUST_CHIPS = ["🚩 Spots red flags", "🗣️ Plain-language results", "🚫 No investment advice"];
 
-export default function PasteMessagePage({ onBack, token, initialText, onTextChange, onSubmitted }: Props) {
+export default function PasteMessagePage({ onBack, token, initialText, onTextChange, onSubmitted, verificationId, onClearVerification, onViewHistory }: Props) {
   const [text, setText] = useState<string>(initialText);
   const [source, setSource] = useState("whatsapp");
   const { submitMessage, isLoading, error } = useAnalyzeMessage(token);
@@ -53,7 +57,11 @@ export default function PasteMessagePage({ onBack, token, initialText, onTextCha
         </div>
       </div>
 
-      <div className="mt-8 grid grid-cols-[3fr_2fr] items-start gap-10 max-md:mt-6 max-md:grid-cols-1 max-md:gap-0">
+      {verificationId && (
+        <VerificationStatusPage verificationId={verificationId} token={token} onBack={onBack} onRetrySubmission={onClearVerification} onViewHistory={onViewHistory} />
+      )}
+
+      {!verificationId && <div className="mt-8 grid grid-cols-[3fr_2fr] items-start gap-10 max-md:mt-6 max-md:grid-cols-1 max-md:gap-0">
         <section>
           <MessageInput value={text} onChange={updateText} />
 
@@ -99,7 +107,7 @@ export default function PasteMessagePage({ onBack, token, initialText, onTextCha
         </section>
 
         <ScamFooter news={SCAM_NEWS} facts={SCAM_FACTS} />
-      </div>
+      </div>}
     </main>
   );
 }

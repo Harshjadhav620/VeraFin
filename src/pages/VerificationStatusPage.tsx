@@ -23,8 +23,8 @@ export default function VerificationStatusPage({ verificationId, token, onBack, 
   const title = failed || invalidCompleted ? "Verification failed" : verification?.status === "processing" ? "Checking your message" : "Verification queued";
 
   return (
-    <main className="grid min-h-[60vh] place-items-center px-4 py-10 max-md:pb-24" aria-live="polite">
-      <section className="w-full max-w-xl rounded-3xl border border-line bg-card/60 p-8 text-center backdrop-blur-md">
+    <div className="mt-8" aria-live="polite">
+      <section className="w-full rounded-2xl border border-line bg-card/60 p-6 backdrop-blur-md">
         <p className="text-4xl" aria-hidden="true">{failed || error ? "⚠️" : "🔎"}</p>
         <h1 className="mt-4 text-2xl font-bold">{error ? "Unable to check status" : title}</h1>
         <p className="mt-2 text-sm leading-relaxed text-muted">
@@ -47,6 +47,6 @@ export default function VerificationStatusPage({ verificationId, token, onBack, 
           </div>
         )}
       </section>
-    </main>
+    </div>
   );
 }

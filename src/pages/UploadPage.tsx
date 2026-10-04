@@ -3,11 +3,15 @@ import PageHeader from "../components/PageHeader";
 import DropZone from "../components/DropZone";
 import ImagePreview from "../components/ImagePreview";
 import { useAnalyzeMessage } from "../hooks/useAnalyzeMessage";
+import VerificationStatusPage from "./VerificationStatusPage";
 
 interface Props {
   onBack: () => void;
   token: string;
   onSubmitted: (verificationId: string) => void;
+  verificationId: string | null;
+  onClearVerification: () => void;
+  onViewHistory: () => void;
 }
 
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
@@ -21,7 +25,7 @@ const TIPS = [
   "Hide your own private details (OTPs, card numbers) before uploading.",
 ];
 
-export default function UploadPage({ onBack, token, onSubmitted }: Props) {
+export default function UploadPage({ onBack, token, onSubmitted, verificationId, onClearVerification, onViewHistory }: Props) {
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -82,7 +86,11 @@ export default function UploadPage({ onBack, token, onSubmitted }: Props) {
         </div>
       </div>
 
-      <div className="mt-8 grid grid-cols-[3fr_2fr] items-start gap-10 max-md:mt-6 max-md:grid-cols-1 max-md:gap-0">
+      {verificationId && (
+        <VerificationStatusPage verificationId={verificationId} token={token} onBack={onBack} onRetrySubmission={onClearVerification} onViewHistory={onViewHistory} />
+      )}
+
+      {!verificationId && <div className="mt-8 grid grid-cols-[3fr_2fr] items-start gap-10 max-md:mt-6 max-md:grid-cols-1 max-md:gap-0">
         <section>
           {file && previewUrl ? (
             <ImagePreview src={previewUrl} name={file.name} size={file.size} onRemove={removeFile} />
@@ -134,7 +142,7 @@ export default function UploadPage({ onBack, token, onSubmitted }: Props) {
             VeraFin never gives stock tips or investment advice. It only helps you check and understand a message.
           </p>
         </aside>
-      </div>
+      </div>}
     </main>
   );
 }
