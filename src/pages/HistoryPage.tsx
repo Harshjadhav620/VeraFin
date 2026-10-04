@@ -8,6 +8,8 @@ import { groupByDay } from "../utils/date";
 import type { HistoryItem, HistoryType } from "../types";
 
 interface Props {
+  items: HistoryItem[];
+  setItems: (items: HistoryItem[]) => void;
   onGoHome: () => void;
 }
 
@@ -19,8 +21,7 @@ const FILTERS: { id: Filter; label: string }[] = [
   { id: "text", label: "Text" },
 ];
 
-export default function HistoryPage({ onGoHome }: Props) {
-  const [items, setItems] = usePersistedState<HistoryItem[]>("vf-history", SAMPLE_HISTORY);
+export default function HistoryPage({ items, setItems, onGoHome }: Props) {
   const [filter, setFilter] = useState<Filter>("all");
   const [query, setQuery] = useState<string>("");
   const [confirmClear, setConfirmClear] = useState<boolean>(false);
