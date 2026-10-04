@@ -11,7 +11,7 @@ VeraFin is a frontend prototype for helping first-time and retail investors paus
 - Settings screen with appearance, account, security, notification, support, and preference sections.
 - Responsive navigation and dark/light/system appearance options.
 
-The current project is a frontend prototype. Message and image analysis are not connected to a backend; the analyze actions show a placeholder message. Recent checks and safety advisories use sample content. History and appearance preferences are stored in browser `localStorage` on the current device.
+The paste-message screen uses the `useAnalyzeMessage` hook and Axios to send the entered text as JSON (`{ "message": "..." }`) to `POST http://localhost:5000/api/test/message`, then displays the response. The API must be running locally for this action to work. Screenshot analysis is not connected to a backend yet and still shows a placeholder message. Recent checks and safety advisories use sample content. History and appearance preferences are stored in browser `localStorage` on the current device.
 
 ## Tech stack
 
