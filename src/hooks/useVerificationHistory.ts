@@ -25,7 +25,7 @@ function toHistoryItem(value: unknown): HistoryItem | null {
         ? result.explanation
         : "Verification";
   const valueRisk = result.risk_level;
-  const risk: RiskLevel = valueRisk === "high" || valueRisk === "medium" || valueRisk === "low" ? valueRisk : "low";
+  const risk: RiskLevel = valueRisk === "high" || valueRisk === "medium" || valueRisk === "low" || valueRisk === "none" ? valueRisk : "low";
 
   return {
     id,
@@ -33,6 +33,9 @@ function toHistoryItem(value: unknown): HistoryItem | null {
     type: value.input.type === "image" ? "image" : "text",
     risk,
     createdAt: value.createdAt,
+    status: value.status === "pending" || value.status === "processing" || value.status === "completed" || value.status === "failed"
+      ? value.status
+      : undefined,
   };
 }
 

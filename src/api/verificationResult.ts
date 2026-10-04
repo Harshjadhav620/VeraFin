@@ -1,7 +1,7 @@
 import type { AnalysisResult, BackendVerificationRecord, RiskLevel } from "../types";
 
 function toRiskLevel(value: string): RiskLevel {
-  return value === "high" || value === "medium" || value === "low" ? value : "low";
+  return value === "high" || value === "medium" || value === "low" || value === "none" ? value : "low";
 }
 
 export function toAnalysisResult(verification: BackendVerificationRecord): AnalysisResult {

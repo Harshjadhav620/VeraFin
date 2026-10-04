@@ -10,6 +10,14 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function isBackendResult(value: unknown): value is BackendVerificationResult {
   if (!isRecord(value)) return false;
+  const optionalStrings = ["decision", "verification_status"];
+  const optionalNumbers = ["risk_score", "verification_score", "confidence"];
+  const optionalBooleans = ["risk_evidence_found", "trust_evidence_found"];
+  const optionalClaimGroups = ["verified_claims", "unverified_claims", "contradicted_claims"];
+  if (optionalStrings.some((key) => value[key] !== undefined && typeof value[key] !== "string") ||
+    optionalNumbers.some((key) => value[key] !== undefined && typeof value[key] !== "number") ||
+    optionalBooleans.some((key) => value[key] !== undefined && typeof value[key] !== "boolean") ||
+    optionalClaimGroups.some((key) => value[key] !== undefined && !Array.isArray(value[key]))) return false;
   return typeof value.overall_status === "string" && typeof value.risk_level === "string" &&
     typeof value.explanation === "string" && typeof value.recommendation === "string" &&
     Array.isArray(value.evidence) && value.evidence.every((item) => typeof item === "string") &&

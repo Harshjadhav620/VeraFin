@@ -1,6 +1,6 @@
 export type NavTab = "home" | "history" | "learn" | "settings";
 export type Page = NavTab | "paste" | "upload"| "result";
-export type RiskLevel = "high" | "medium" | "low";
+export type RiskLevel = "high" | "medium" | "low" | "none";
 export type HistoryType = "text" | "image";
 
 export interface InputOption {
@@ -28,6 +28,7 @@ export interface HistoryItem {
   type: HistoryType;
   risk: RiskLevel;
   createdAt: string; // ISO date string
+  status?: VerificationStatus;
 }
 
 export interface RiskIndicator {
@@ -42,7 +43,16 @@ export type VerificationStatus = "pending" | "processing" | "completed" | "faile
 export interface BackendVerificationResult {
   overall_status: "verified" | "unverified" | "suspicious" | "inconclusive";
   risk_level: "high" | "medium" | "low" | "none";
+  risk_score?: number;
+  decision?: string;
+  verification_status?: string;
+  verification_score?: number;
   confidence?: number;
+  risk_evidence_found?: boolean;
+  trust_evidence_found?: boolean;
+  verified_claims?: unknown[];
+  unverified_claims?: unknown[];
+  contradicted_claims?: unknown[];
   explanation: string;
   evidence: string[];
   warnings: string[];

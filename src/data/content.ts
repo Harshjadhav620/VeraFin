@@ -31,7 +31,7 @@ export const SCAM_FACTS: string[] = [
   "Check any adviser's registration on the official SEBI website before paying.",
 ];
 
-export const RISK_LABEL = { high: "High Risk", medium: "Medium Risk", low: "Low Risk" } as const;
+export const RISK_LABEL = { high: "High Risk", medium: "Medium Risk", low: "Low Risk", none: "No Risk Signals" } as const;
 
 const hoursAgo = (h: number): string => new Date(Date.now() - h * 3_600_000).toISOString();
 

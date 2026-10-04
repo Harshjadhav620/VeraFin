@@ -9,7 +9,7 @@ interface Props {
   onViewHistory: () => void;
 }
 
-const SEVERITY_LABEL: Record<RiskLevel, string> = { high: "High", medium: "Medium", low: "Low" };
+const SEVERITY_LABEL: Record<RiskLevel, string> = { high: "High", medium: "Medium", low: "Low", none: "None" };
 
 const SOURCES = [
   { label: "SEBI (check registered advisers)", href: "https://www.sebi.gov.in" },
@@ -18,6 +18,11 @@ const SOURCES = [
 ];
 
 const card = "rounded-3xl border border-line bg-card/60 p-5 backdrop-blur-md";
+
+function formatResponseValue(value: unknown): string {
+  if (typeof value === "string") return value;
+  return JSON.stringify(value, null, 2) ?? String(value);
+}
 
 export default function ResultPage({ result, onBack, onViewHistory }: Props) {
   const backendResult = result.backendResult;
@@ -34,6 +39,12 @@ export default function ResultPage({ result, onBack, onViewHistory }: Props) {
           {result.source === "image" ? "🖼️ Screenshot" : "📝 Message"} · checked {new Date(result.createdAt).toLocaleString("en-IN")}
         </p>
         {backendResult && <p className="mt-2 text-sm font-semibold capitalize text-brand">Result: {backendResult.overall_status.replaceAll("_", " ")}</p>}
+        {backendResult && (
+          <div className="mt-3 flex flex-wrap gap-2 text-xs">
+            {backendResult.decision && <span className="rounded-full border border-line bg-card/60 px-3 py-1">Decision: {backendResult.decision.replaceAll("_", " ")}</span>}
+            {backendResult.verification_status && <span className="rounded-full border border-line bg-card/60 px-3 py-1">Verification: {backendResult.verification_status.replaceAll("_", " ")}</span>}
+          </div>
+        )}
         {backendResult && (backendResult.overall_status === "unverified" || backendResult.overall_status === "inconclusive") && (
           <p className="mt-2 max-w-3xl text-xs leading-relaxed text-muted">
             There is not enough evidence to confirm these claims. Missing evidence does not prove that they are false.
@@ -46,6 +57,22 @@ export default function ResultPage({ result, onBack, onViewHistory }: Props) {
         <section className="space-y-5">
           <RiskBanner risk={result.risk} summary={result.summary} />
           {backendResult && <p className="-mt-3 px-2 text-xs text-muted">Risk level is a prototype indicator, not a definitive fraud determination.</p>}
+
+          {backendResult && (
+            <div className={card}>
+              <h2 className="mb-3 text-[15px] font-bold">Decision support</h2>
+              <div className="grid grid-cols-2 gap-3 text-sm max-sm:grid-cols-1">
+                {backendResult.risk_score !== undefined && <p className="rounded-xl bg-surface/50 px-3 py-2">Risk score: <b>{backendResult.risk_score}</b></p>}
+                {backendResult.verification_score !== undefined && <p className="rounded-xl bg-surface/50 px-3 py-2">Claim verification: <b>{backendResult.verification_score}%</b></p>}
+                {backendResult.confidence !== undefined && <p className="rounded-xl bg-surface/50 px-3 py-2">Decision confidence: <b>{Math.round(backendResult.confidence * 100)}%</b></p>}
+                {backendResult.risk_evidence_found !== undefined && <p className="rounded-xl bg-surface/50 px-3 py-2">Risk evidence: <b>{backendResult.risk_evidence_found ? "Found" : "Not found"}</b></p>}
+                {backendResult.trust_evidence_found !== undefined && <p className="rounded-xl bg-surface/50 px-3 py-2">Trust/reference evidence: <b>{backendResult.trust_evidence_found ? "Found" : "Not found"}</b></p>}
+              </div>
+              <p className="mt-3 text-xs leading-relaxed text-muted">
+                Evidence presence describes what retrieval found. Missing evidence does not prove a claim false or the message safe.
+              </p>
+            </div>
+          )}
 
           <div className={card}>
             <h2 className="mb-3 text-[15px] font-bold">🚩 Risk indicators</h2>
@@ -67,6 +94,26 @@ export default function ResultPage({ result, onBack, onViewHistory }: Props) {
               </div>
             )}
           </div>
+
+          {backendResult && (backendResult.verified_claims?.length || backendResult.unverified_claims?.length || backendResult.contradicted_claims?.length) ? (
+            <div className={card}>
+              <h2 className="mb-3 text-[15px] font-bold">Claim outcomes</h2>
+              <div className="space-y-3">
+                {([
+                  ["Verified", backendResult.verified_claims],
+                  ["Unverified", backendResult.unverified_claims],
+                  ["Contradicted", backendResult.contradicted_claims],
+                ] as const).map(([label, values]) => values && values.length > 0 && (
+                  <div key={label}>
+                    <h3 className="mb-1 text-xs font-semibold text-muted">{label}</h3>
+                    <ul className="space-y-1 text-sm">
+                      {values.map((value, index) => <li key={`${label}-${index}`} className="rounded-xl bg-surface/50 px-3 py-2 whitespace-pre-wrap">{formatResponseValue(value)}</li>)}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
 
           <div className={card}>
             <h2 className="mb-3 text-[15px] font-bold">📋 Claims found</h2>
@@ -185,9 +232,26 @@ export default function ResultPage({ result, onBack, onViewHistory }: Props) {
 
       {backendResult && (
         <details className={`${card} mt-6`}>
+          <summary className="cursor-pointer text-sm font-semibold">Detailed verification pipeline</summary>
+          <div className="mt-4 space-y-2">
+            {(["extracted", "plan", "retrieval", "analysis", "risk", "explanation"] as const).map((stage) => {
+              const value = backendResult.pipeline?.[stage];
+              return value === undefined ? null : (
+                <details key={stage} className="rounded-xl border border-line p-3">
+                  <summary className="cursor-pointer text-sm font-medium capitalize">{stage}</summary>
+                  <pre className="mt-3 max-h-80 overflow-auto whitespace-pre-wrap break-words text-xs leading-relaxed text-muted">{formatResponseValue(value)}</pre>
+                </details>
+              );
+            })}
+          </div>
+        </details>
+      )}
+
+      {backendResult && (
+        <details className={`${card} mt-4`}>
           <summary className="cursor-pointer text-sm font-semibold">Full backend verification response</summary>
           <pre className="mt-4 max-h-[32rem] overflow-auto whitespace-pre-wrap break-words text-xs leading-relaxed text-muted">
-            {JSON.stringify(backendResult, null, 2)}
+            {formatResponseValue(backendResult)}
           </pre>
         </details>
       )}

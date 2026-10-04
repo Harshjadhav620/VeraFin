@@ -17,12 +17,13 @@ const RULES: Rule[] = [
   { id: "contact", title: "External link or phone number", detail: "Asks you to click, call or message an outside contact.", severity: "medium", test: /https?:\/\/|www\.|\+?\d[\d\s-]{8,}|whatsapp|telegram|click (here|the link)/i },
 ];
 
-const POINTS: Record<RiskLevel, number> = { high: 2, medium: 1, low: 0 };
+const POINTS: Record<RiskLevel, number> = { high: 2, medium: 1, low: 0, none: 0 };
 
 const SUMMARY: Record<RiskLevel, string> = {
   high: "This message shows multiple signs of a potential financial scam.",
   medium: "This message has some warning signs. Verify it before you act.",
   low: "We did not find major scam signs, but always verify with official sources.",
+  none: "No risk signals were identified. This does not verify every claim in the message.",
 };
 
 const ADVICE: string[] = [

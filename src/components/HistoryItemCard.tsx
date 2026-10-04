@@ -21,9 +21,15 @@ export default function HistoryItemCard({ item, onDelete }: Props) {
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-semibold">{item.title}</p>
         <div className="mt-1 flex items-center gap-2">
-          <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${RISK_STYLE[item.risk]}`}>
-            {RISK_LABEL[item.risk]}
-          </span>
+          {item.status && item.status !== "completed" ? (
+            <span className={`rounded-full bg-surface px-2 py-0.5 text-[11px] font-semibold ${item.status === "failed" ? "text-red-400" : "text-muted"}`}>
+              {item.status === "pending" ? "Queued" : item.status === "processing" ? "Processing" : "Failed"}
+            </span>
+          ) : (
+            <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${RISK_STYLE[item.risk]}`}>
+              {RISK_LABEL[item.risk]}
+            </span>
+          )}
           <span className="text-xs text-muted">{formatTime(item.createdAt)}</span>
         </div>
       </div>

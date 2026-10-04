@@ -9,6 +9,7 @@ const CONFIG: Record<RiskLevel, { icon: string; title: string; box: string; acce
   high: { icon: "🚨", title: "High Risk", box: "border-red-500/30 bg-red-500/10", accent: "text-red-400" },
   medium: { icon: "⚠️", title: "Medium Risk", box: "border-amber-500/30 bg-amber-500/10", accent: "text-amber-400" },
   low: { icon: "✅", title: "Low Risk", box: "border-green-500/30 bg-green-500/10", accent: "text-green-400" },
+  none: { icon: "✅", title: "No Risk Signals", box: "border-green-500/30 bg-green-500/10", accent: "text-green-400" },
 };
 
 export default function RiskBanner({ risk, summary }: Props) {
