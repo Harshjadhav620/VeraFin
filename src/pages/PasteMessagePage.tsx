@@ -3,13 +3,14 @@ import PageHeader from "../components/PageHeader";
 import MessageInput from "../components/MessageInput";
 import ScamFooter from "../components/ScamFooter";
 import { SCAM_FACTS, SCAM_NEWS } from "../data/content";
-import { toAnalysisResult } from "../api/verificationResult";
 import { useAnalyzeMessage } from "../hooks/useAnalyzeMessage";
-import type { AnalysisResult } from "../types";
 
 interface Props {
   onBack: () => void;
-  onAnalyzed: (result: AnalysisResult) => void;
+  token: string;
+  initialText: string;
+  onTextChange: (text: string) => void;
+  onSubmitted: (verificationId: string) => void;
 }
 
 const SAMPLE =
@@ -17,21 +18,19 @@ const SAMPLE =
 
 const TRUST_CHIPS = ["🚩 Spots red flags", "🗣️ Plain-language results", "🚫 No investment advice"];
 
-export default function PasteMessagePage({ onBack, onAnalyzed }: Props) {
-  const [text, setText] = useState<string>("");
-  const [loading, setLoading] = useState<boolean>(false);
-  const { analyzeMessage, error } = useAnalyzeMessage();
+export default function PasteMessagePage({ onBack, token, initialText, onTextChange, onSubmitted }: Props) {
+  const [text, setText] = useState<string>(initialText);
+  const [source, setSource] = useState("whatsapp");
+  const { submitMessage, isLoading, error } = useAnalyzeMessage(token);
+
+  const updateText = (nextText: string): void => {
+    setText(nextText);
+    onTextChange(nextText);
+  };
 
   const analyze = async (): Promise<void> => {
-    setLoading(true);
-    try {
-      const sent = await analyzeMessage(text);
-      if (!sent) return;
-
-      onAnalyzed(toAnalysisResult(sent, text));
-    } finally {
-      setLoading(false);
-    }
+    const response = await submitMessage(text, source);
+    if (response) onSubmitted(response.verification.id);
   };
 
   return (
@@ -56,7 +55,18 @@ export default function PasteMessagePage({ onBack, onAnalyzed }: Props) {
 
       <div className="mt-8 grid grid-cols-[3fr_2fr] items-start gap-10 max-md:mt-6 max-md:grid-cols-1 max-md:gap-0">
         <section>
-          <MessageInput value={text} onChange={setText} />
+          <MessageInput value={text} onChange={updateText} />
+
+          <label className="mt-4 block text-sm font-medium text-muted">
+            Message source
+            <select value={source} onChange={(event) => setSource(event.target.value)}
+              className="mt-1.5 w-full rounded-xl border border-line bg-card px-3 py-2.5 text-ink outline-none focus:border-brand">
+              <option value="whatsapp">WhatsApp</option>
+              <option value="telegram">Telegram</option>
+              <option value="sms">SMS</option>
+              <option value="other">Other</option>
+            </select>
+          </label>
 
           {error && (
             <p role="alert" className="mt-4 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
@@ -66,22 +76,22 @@ export default function PasteMessagePage({ onBack, onAnalyzed }: Props) {
 
           <button
             onClick={analyze}
-            disabled={!text.trim() || loading}
+            disabled={!text.trim() || isLoading}
             className="mt-4 w-full rounded-full bg-linear-to-r from-brand to-violet-500 py-3.5 text-[15px] font-bold text-white
                        shadow-[0_0_30px_-6px_rgba(124,92,255,0.7)] transition duration-300
                        hover:scale-[1.02] hover:shadow-[0_0_44px_-4px_rgba(124,92,255,0.9)] active:scale-95
                        disabled:cursor-not-allowed disabled:bg-none disabled:bg-disabled disabled:text-muted disabled:shadow-none
                        disabled:hover:scale-100"
           >
-            {loading ? "Analyzing…" : "🔍 Analyze Message"}
+            {isLoading ? "Submitting…" : "🔍 Analyze Message"}
           </button>
 
           <div className="mt-3 flex items-center justify-center gap-5 text-xs">
-            <button onClick={() => setText(SAMPLE)} className="text-brand hover:underline">
+            <button onClick={() => updateText(SAMPLE)} className="text-brand hover:underline">
               Try an example
             </button>
             {text && (
-              <button onClick={() => setText("")} className="text-muted hover:text-ink hover:underline">
+              <button onClick={() => updateText("")} className="text-muted hover:text-ink hover:underline">
                 Clear
               </button>
             )}

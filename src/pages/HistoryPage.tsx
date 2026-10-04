@@ -2,15 +2,17 @@ import { useState } from "react";
 import FilterTabs from "../components/FilterTabs";
 import HistoryItemCard from "../components/HistoryItemCard";
 import EmptyState from "../components/EmptyState";
-import { SAMPLE_HISTORY } from "../data/content";
-import { usePersistedState } from "../hooks/usePersistedState";
 import { groupByDay } from "../utils/date";
 import type { HistoryItem, HistoryType } from "../types";
 
 interface Props {
   items: HistoryItem[];
-  setItems: (items: HistoryItem[]) => void;
+  setItems?: (items: HistoryItem[]) => void;
   onGoHome: () => void;
+  readOnly?: boolean;
+  loading?: boolean;
+  error?: string | null;
+  onRetry?: () => void;
 }
 
 type Filter = "all" | HistoryType;
@@ -21,7 +23,7 @@ const FILTERS: { id: Filter; label: string }[] = [
   { id: "text", label: "Text" },
 ];
 
-export default function HistoryPage({ items, setItems, onGoHome }: Props) {
+export default function HistoryPage({ items, setItems, onGoHome, readOnly = false, loading = false, error, onRetry }: Props) {
   const [filter, setFilter] = useState<Filter>("all");
   const [query, setQuery] = useState<string>("");
   const [confirmClear, setConfirmClear] = useState<boolean>(false);
@@ -32,9 +34,9 @@ export default function HistoryPage({ items, setItems, onGoHome }: Props) {
   );
   const groups = groupByDay(visible);
 
-  const deleteOne = (id: number): void => setItems(items.filter((i) => i.id !== id));
+  const deleteOne = (id: HistoryItem["id"]): void => setItems?.(items.filter((i) => i.id !== id));
   const clearAll = (): void => {
-    setItems([]);
+    setItems?.([]);
     setConfirmClear(false);
   };
 
@@ -48,7 +50,7 @@ export default function HistoryPage({ items, setItems, onGoHome }: Props) {
           <p className="mt-2 text-[15px] text-muted max-md:text-[13px]">Your past checks, newest first.</p>
         </div>
 
-        {items.length > 0 &&
+        {!readOnly && items.length > 0 &&
           (confirmClear ? (
             <div className="flex items-center gap-2 text-xs">
               <span className="text-muted">Delete all {items.length} checks?</span>
@@ -81,7 +83,14 @@ export default function HistoryPage({ items, setItems, onGoHome }: Props) {
       </div>
 
       <div className="mt-6 max-w-3xl">
-        {groups.length === 0 ? (
+        {error ? (
+          <div role="alert" className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+            Could not load your verification history: {error}{" "}
+            {onRetry && <button onClick={onRetry} className="font-semibold underline">Try again</button>}
+          </div>
+        ) : loading ? (
+          <p className="py-10 text-center text-sm text-muted">Loading your checks…</p>
+        ) : groups.length === 0 ? (
           items.length === 0 ? (
             <EmptyState
               title="No checks yet"
@@ -100,7 +109,7 @@ export default function HistoryPage({ items, setItems, onGoHome }: Props) {
               </h2>
               <div className="space-y-2.5">
                 {g.items.map((item) => (
-                  <HistoryItemCard key={item.id} item={item} onDelete={deleteOne} />
+                  <HistoryItemCard key={item.id} item={item} onDelete={readOnly ? undefined : deleteOne} />
                 ))}
               </div>
             </section>

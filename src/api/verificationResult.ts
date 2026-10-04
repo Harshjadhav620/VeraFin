@@ -1,30 +1,30 @@
-import type { AnalysisResult, RiskLevel, VerificationResponse } from "../types";
+import type { AnalysisResult, BackendVerificationRecord, RiskLevel } from "../types";
 
-function toRiskLevel(value: string | undefined): RiskLevel {
-  return value === "high" || value === "medium" || value === "low" ? value : "medium";
+function toRiskLevel(value: string): RiskLevel {
+  return value === "high" || value === "medium" || value === "low" ? value : "low";
 }
 
-export function toAnalysisResult(response: VerificationResponse, submittedText: string): AnalysisResult {
-  const claims = response.analysis?.assessments ?? response.explanation?.claims ?? [];
-  const riskSignals = response.input?.riskSignals ?? [];
-  const title = submittedText.trim().slice(0, 40);
+export function toAnalysisResult(verification: BackendVerificationRecord): AnalysisResult {
+  const backendResult = verification.result;
+  const extractedText = verification.content?.raw_text ?? verification.content?.extracted_text ?? "";
+  const title = verification.content?.image_metadata?.originalName ?? (extractedText.trim().slice(0, 40) || "Verification");
 
   return {
     id: Date.now(),
-    title: title.length < submittedText.trim().length ? `${title}…` : title,
-    source: "text",
-    risk: toRiskLevel(response.riskAssessment?.level ?? response.explanation?.risk?.level),
-    summary: response.explanation?.summary ?? "The backend returned a verification result without a summary.",
-    indicators: riskSignals.map((signal, index) => ({
-      id: `${index}-${signal.indicator}`,
-      title: signal.indicator,
-      detail: signal.evidence,
-      severity: toRiskLevel(signal.severity),
+    title: title.length < extractedText.trim().length ? `${title}…` : title,
+    source: verification.input.type === "image" ? "image" : "text",
+    risk: toRiskLevel(backendResult?.risk_level ?? "none"),
+    summary: backendResult?.explanation ?? "The verification completed without an explanation.",
+    indicators: (backendResult?.risk_indicators ?? []).map((indicator, index) => ({
+      id: `${index}-${indicator.indicator}`,
+      title: indicator.indicator,
+      detail: indicator.evidence,
+      severity: toRiskLevel(indicator.severity),
     })),
-    claims: claims.map((claim) => claim.claim),
-    extractedText: submittedText,
-    advice: response.explanation?.recommendedActions ?? [],
-    createdAt: new Date().toISOString(),
-    verification: response,
+    claims: (backendResult?.claims ?? []).map((claim) => claim.claim),
+    extractedText,
+    advice: backendResult?.recommendation ? [backendResult.recommendation] : [],
+    createdAt: verification.createdAt,
+    backendResult,
   };
 }

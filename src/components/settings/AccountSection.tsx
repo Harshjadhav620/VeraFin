@@ -2,22 +2,36 @@ import { useEffect, useRef, useState } from "react";
 import type { ChangeEvent } from "react";
 import SettingsCard, { Row } from "./SettingsCard";
 import Field from "./Field";
+import { apiClient, getApiErrorMessage } from "../../api/client";
 
-export default function AccountSection() {
-  const [name, setName] = useState<string>("Harsh");
-  const [username, setUsername] = useState<string>("harsh_verafin");
-  const [email, setEmail] = useState<string>("harsh@example.com");
-  const [phone, setPhone] = useState<string>("+91 98765 43210");
+interface Props {
+  token: string;
+}
+
+interface ProfileResponse {
+  user?: { name?: string; email?: string };
+}
+
+export default function AccountSection({ token }: Props) {
+  const [name, setName] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   const [photo, setPhoto] = useState<string | null>(null);
-  const [saved, setSaved] = useState<boolean>(false);
   const fileRef = useRef<HTMLInputElement>(null);
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    return () => {
-      if (timer.current) clearTimeout(timer.current);
-    };
-  }, []);
+    let active = true;
+    apiClient.get<ProfileResponse>("/api/users/profile", { headers: { Authorization: `Bearer ${token}` } })
+      .then(({ data }) => {
+        if (!active || !data.user) return;
+        setName(data.user.name ?? "");
+        setEmail(data.user.email ?? "");
+      })
+      .catch((requestError: unknown) => { if (active) setError(getApiErrorMessage(requestError)); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [token]);
 
   const initials = name
     .split(" ")
@@ -30,12 +44,6 @@ export default function AccountSection() {
   const onPhoto = (e: ChangeEvent<HTMLInputElement>): void => {
     const file = e.target.files?.[0];
     if (file) setPhoto(URL.createObjectURL(file));
-  };
-
-  const save = (): void => {
-    // TODO: send { name, username, email, phone } to your backend
-    setSaved(true);
-    timer.current = setTimeout(() => setSaved(false), 2000);
   };
 
   return (
@@ -65,18 +73,12 @@ export default function AccountSection() {
       </div>
 
       <div className="grid grid-cols-2 gap-3 max-md:grid-cols-1">
-        <Field label="Display name" value={name} onChange={setName} />
-        <Field label="Username" value={username} onChange={setUsername} />
-        <Field label="Email address" type="email" value={email} onChange={setEmail} />
-        <Field label="Phone number" type="tel" value={phone} onChange={setPhone} />
+        <Field label="Display name" value={name} onChange={setName} readOnly />
+        <Field label="Email address" type="email" value={email} onChange={setEmail} readOnly />
       </div>
-
-      <button
-        onClick={save}
-        className="mt-4 rounded-full bg-linear-to-r from-brand to-violet-500 px-6 py-2.5 text-sm font-bold text-white transition hover:scale-105 active:scale-95"
-      >
-        {saved ? "✓ Saved" : "Save changes"}
-      </button>
+      {loading && <p className="mt-3 text-xs text-muted">Loading profile…</p>}
+      {error && <p role="alert" className="mt-3 text-xs text-red-400">Could not load profile: {error}</p>}
+      {!loading && !error && <p className="mt-3 text-xs text-muted">Profile details are managed by your account.</p>}
 
       <h3 className="mb-1 mt-7 text-sm font-bold text-muted">Subscription & billing</h3>
       <Row title="Current plan" description="Free: basic message and screenshot checks">

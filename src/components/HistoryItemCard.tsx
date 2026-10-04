@@ -5,7 +5,7 @@ import { formatTime } from "../utils/date";
 
 interface Props {
   item: HistoryItem;
-  onDelete: (id: number) => void;
+  onDelete?: (id: HistoryItem["id"]) => void;
 }
 
 export default function HistoryItemCard({ item, onDelete }: Props) {
@@ -28,13 +28,15 @@ export default function HistoryItemCard({ item, onDelete }: Props) {
         </div>
       </div>
 
-      <button
-        onClick={() => onDelete(item.id)}
-        aria-label={`Delete ${item.title}`}
-        className="grid size-9 shrink-0 place-items-center rounded-full text-muted transition duration-200 hover:bg-red-500/10 hover:text-red-400 active:scale-90"
-      >
-        🗑️
-      </button>
+      {onDelete && (
+        <button
+          onClick={() => onDelete(item.id)}
+          aria-label={`Delete ${item.title}`}
+          className="grid size-9 shrink-0 place-items-center rounded-full text-muted transition duration-200 hover:bg-red-500/10 hover:text-red-400 active:scale-90"
+        >
+          🗑️
+        </button>
+      )}
     </div>
   );
 }

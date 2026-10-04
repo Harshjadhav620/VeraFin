@@ -23,7 +23,7 @@ export interface NewsItem {
 }
 
 export interface HistoryItem {
-  id: number;
+  id: number | string;
   title: string;
   type: HistoryType;
   risk: RiskLevel;
@@ -37,46 +37,36 @@ export interface RiskIndicator {
   severity: RiskLevel;
 }
 
-export interface VerificationResponse {
-  input?: {
-    text?: string;
-    message?: string;
-    claims?: { claim: string; claim_type?: string; subject?: string }[];
-    entities?: { name: string; type: string }[];
-    links?: { url: string; domain?: string }[];
-    riskSignals?: { indicator: string; evidence: string; severity: string }[];
-  };
-  analysis?: {
-    assessments?: {
-      claim: string;
-      claimType?: string;
-      status: string;
-      explanation: string;
-      evidenceIds?: string[];
-    }[];
-  };
-  retrieval?: {
-    mode?: string;
-    results?: { queryId: string; outcome: string; source?: string; evidence?: unknown[] }[];
-  };
-  riskAssessment?: {
-    score?: number;
-    level?: string;
-    factors?: { name: string; description: string; points: number; source?: string }[];
-    limitations?: string[];
-    interpretation?: string;
-  };
-  explanation?: {
-    summary?: string;
-    risk?: { level?: string; score?: number };
-    reasons?: string[];
-    claims?: { claim: string; status: string; explanation: string; evidenceIds?: string[] }[];
-    evidence?: unknown[];
-    limitations?: string[];
-    recommendedActions?: string[];
-    notice?: string;
-  };
-  [key: string]: unknown;
+export type VerificationStatus = "pending" | "processing" | "completed" | "failed";
+
+export interface BackendVerificationResult {
+  overall_status: "verified" | "unverified" | "suspicious" | "inconclusive";
+  risk_level: "high" | "medium" | "low" | "none";
+  confidence?: number;
+  explanation: string;
+  evidence: string[];
+  warnings: string[];
+  recommendation: string;
+  sources?: { name: string; url?: string; status: "found" | "not_found" | "unverified"; detail?: string }[];
+  claims?: { claim: string; claim_type: string; subject: string }[];
+  risk_indicators?: { indicator: string; evidence: string; severity: "high" | "medium" | "low" }[];
+  pipeline?: Record<string, unknown>;
+}
+
+export interface BackendVerificationRecord {
+  _id?: string;
+  id?: string;
+  input: { type: HistoryType | "voice"; language: string; source: string };
+  content?: { raw_text?: string; extracted_text?: string; image_metadata?: { originalName?: string } };
+  status: VerificationStatus;
+  result?: BackendVerificationResult;
+  error?: string;
+  createdAt: string;
+}
+
+export interface SubmissionResponse {
+  message: string;
+  verification: { id: string; type: HistoryType | "voice"; status: VerificationStatus; createdAt: string };
 }
 
 export interface AnalysisResult {
@@ -90,5 +80,5 @@ export interface AnalysisResult {
   extractedText: string;
   advice: string[];
   createdAt: string; // ISO date string
-  verification?: VerificationResponse;
+  backendResult?: BackendVerificationResult;
 }

@@ -11,7 +11,7 @@ VeraFin is a frontend prototype for helping first-time and retail investors paus
 - Settings screen with appearance, account, security, notification, support, and preference sections.
 - Responsive navigation and dark/light/system appearance options.
 
-The paste-message screen uses the `useAnalyzeMessage` hook and Axios to send the entered text as JSON (`{ "message": "..." }`) to `${VITE_API_BASE_URL}/api/verification/run`. The result page shows the returned risk assessment, claims, recommendations, evidence limitations, and the full response. Screenshot analysis still uses local mock data. Recent checks and safety advisories use sample content. History and appearance preferences are stored in browser `localStorage` on the current device.
+Sign in or register before using backend features. Text and image submissions send authenticated requests to `POST ${VITE_API_BASE_URL}/api/verification/submit`; the app polls the returned verification ID until processing completes, then displays the backend result. JWTs stay in memory and are cleared on reload. History and profile details are loaded from the backend. Appearance preferences remain in browser `localStorage`.
 
 ## Tech stack
 
@@ -53,10 +53,11 @@ Vite prints the local development URL in the terminal.
 
 ```text
 src/
+├── api/                # Axios client and backend response adapters
 ├── components/       # Shared navigation, cards, form controls, and settings UI
 ├── data/             # Sample history, navigation, scam advisories, and risk styles
-├── hooks/            # Persisted browser state and appearance preferences
-├── pages/            # Home, paste, upload, history, settings, and coming-soon screens
+├── hooks/            # Authenticated submit, polling, history, and appearance state
+├── pages/            # Sign in, home, paste, upload, result, history, and settings screens
 ├── utils/            # Date and history grouping helpers
 ├── App.tsx           # Screen selection and app-level navigation
 ├── index.css         # Global styles and theme tokens

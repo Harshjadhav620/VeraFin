@@ -20,9 +20,7 @@ const SOURCES = [
 const card = "rounded-3xl border border-line bg-card/60 p-5 backdrop-blur-md";
 
 export default function ResultPage({ result, onBack, onViewHistory }: Props) {
-  const verificationClaims = result.verification?.analysis?.assessments ?? result.verification?.explanation?.claims ?? [];
-  const reasons = result.verification?.explanation?.reasons ?? [];
-  const limitations = result.verification?.riskAssessment?.limitations ?? result.verification?.explanation?.limitations ?? [];
+  const backendResult = result.backendResult;
 
   return (
     <main className="px-10 py-10 max-md:px-4.5 max-md:py-5 max-md:pb-24">
@@ -35,17 +33,19 @@ export default function ResultPage({ result, onBack, onViewHistory }: Props) {
         <p className="mt-2 text-xs text-muted">
           {result.source === "image" ? "🖼️ Screenshot" : "📝 Message"} · checked {new Date(result.createdAt).toLocaleString("en-IN")}
         </p>
+        {backendResult && <p className="mt-2 text-sm font-semibold capitalize text-brand">Result: {backendResult.overall_status.replaceAll("_", " ")}</p>}
+        {backendResult && (backendResult.overall_status === "unverified" || backendResult.overall_status === "inconclusive") && (
+          <p className="mt-2 max-w-3xl text-xs leading-relaxed text-muted">
+            There is not enough evidence to confirm these claims. Missing evidence does not prove that they are false.
+          </p>
+        )}
       </div>
 
       <div className="mt-6 grid grid-cols-[3fr_2fr] items-start gap-8 max-md:grid-cols-1 max-md:gap-5">
         {/* Left column */}
         <section className="space-y-5">
           <RiskBanner risk={result.risk} summary={result.summary} />
-          {result.verification?.riskAssessment?.score !== undefined && (
-            <p className="-mt-3 px-2 text-xs text-muted">
-              Prototype risk score: {result.verification.riskAssessment.score}
-            </p>
-          )}
+          {backendResult && <p className="-mt-3 px-2 text-xs text-muted">Risk level is a prototype indicator, not a definitive fraud determination.</p>}
 
           <div className={card}>
             <h2 className="mb-3 text-[15px] font-bold">🚩 Risk indicators</h2>
@@ -75,23 +75,12 @@ export default function ResultPage({ result, onBack, onViewHistory }: Props) {
             ) : (
               <div className="space-y-2.5">
                 {result.claims.map((claim) => {
-                  const assessment = verificationClaims.find((item) => item.claim === claim);
-                  const status = assessment?.status ?? "unverified";
-                  const statusStyle = status === "supported"
-                    ? "bg-green-500/15 text-green-400"
-                    : status === "contradicted"
-                      ? "bg-red-500/15 text-red-400"
-                      : "bg-amber-500/15 text-amber-400";
+                  const claimType = backendResult?.claims?.find((item) => item.claim === claim)?.claim_type;
 
                   return (
                     <div key={claim} className="rounded-2xl bg-surface/50 px-4 py-3">
-                      <div className="flex items-start justify-between gap-3">
-                        <p className="text-sm italic">“{claim}”</p>
-                        <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-semibold capitalize ${statusStyle}`}>
-                          {status.replaceAll("_", " ")}
-                        </span>
-                      </div>
-                      {assessment?.explanation && <p className="mt-2 text-xs leading-relaxed text-muted">{assessment.explanation}</p>}
+                      <p className="text-sm italic">“{claim}”</p>
+                      {claimType && <p className="mt-1 text-xs capitalize text-muted">{claimType.replaceAll("_", " ")}</p>}
                     </div>
                   );
                 })}
@@ -109,21 +98,38 @@ export default function ResultPage({ result, onBack, onViewHistory }: Props) {
             </p>
           </div>
 
-          {reasons.length > 0 && (
+          {backendResult?.warnings && backendResult.warnings.length > 0 && (
             <div className={card}>
-              <h2 className="mb-3 text-[15px] font-bold">🧾 Verification findings</h2>
+              <h2 className="mb-3 text-[15px] font-bold">⚠️ Warnings</h2>
               <ul className="space-y-2 text-[13px] leading-relaxed text-muted">
-                {reasons.map((reason) => <li key={reason}>• {reason}</li>)}
+                {backendResult.warnings.map((warning) => <li key={warning}>• {warning}</li>)}
               </ul>
             </div>
           )}
 
-          {limitations.length > 0 && (
+          {backendResult?.evidence && backendResult.evidence.length > 0 && (
             <div className={card}>
-              <h2 className="mb-3 text-[15px] font-bold">Evidence limitations</h2>
+              <h2 className="mb-3 text-[15px] font-bold">📚 Evidence</h2>
               <ul className="space-y-2 text-[13px] leading-relaxed text-muted">
-                {limitations.map((limitation) => <li key={limitation}>• {limitation}</li>)}
+                {backendResult.evidence.map((item, index) => <li key={`${index}-${item}`}>• {item}</li>)}
               </ul>
+            </div>
+          )}
+
+          {backendResult?.sources && backendResult.sources.length > 0 && (
+            <div className={card}>
+              <h2 className="mb-3 text-[15px] font-bold">🔗 Sources checked</h2>
+              <div className="space-y-2">
+                {backendResult.sources.map((source) => (
+                  <div key={`${source.name}-${source.url ?? ""}`} className="rounded-xl bg-surface/50 px-3 py-2.5 text-sm">
+                    <div className="flex items-center justify-between gap-3">
+                      <span>{source.url ? <a href={source.url} target="_blank" rel="noreferrer" className="text-brand hover:underline">{source.name}</a> : source.name}</span>
+                      <span className="shrink-0 text-xs capitalize text-muted">{source.status.replaceAll("_", " ")}</span>
+                    </div>
+                    {source.detail && <p className="mt-1 text-xs leading-relaxed text-muted">{source.detail}</p>}
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
@@ -177,11 +183,11 @@ export default function ResultPage({ result, onBack, onViewHistory }: Props) {
         </aside>
       </div>
 
-      {result.verification && (
+      {backendResult && (
         <details className={`${card} mt-6`}>
           <summary className="cursor-pointer text-sm font-semibold">Full backend verification response</summary>
           <pre className="mt-4 max-h-[32rem] overflow-auto whitespace-pre-wrap break-words text-xs leading-relaxed text-muted">
-            {JSON.stringify(result.verification, null, 2)}
+            {JSON.stringify(backendResult, null, 2)}
           </pre>
         </details>
       )}

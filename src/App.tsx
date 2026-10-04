@@ -5,19 +5,21 @@ import BottomNav from "./components/BottomNav";
 import HomePage from "./pages/HomePage";
 import PasteMessagePage from "./pages/PasteMessagePage";
 import UploadPage from "./pages/UploadPage";
-import ResultPage from "./pages/ResultPage";
 import HistoryPage from "./pages/HistoryPage";
 import SettingsPage from "./pages/SettingsPage";
+import AuthPage from "./pages/AuthPage";
+import VerificationStatusPage from "./pages/VerificationStatusPage";
 import { useAppearance } from "./hooks/useAppearance";
-import { usePersistedState } from "./hooks/usePersistedState";
-import { SAMPLE_HISTORY } from "./data/content";
-import type { AnalysisResult, HistoryItem, InputOption, NavTab, Page } from "./types";
+import { useVerificationHistory } from "./hooks/useVerificationHistory";
+import type { InputOption, NavTab, Page } from "./types";
 
 export default function App() {
   const [page, setPage] = useState<Page>("home");
-  const [result, setResult] = useState<AnalysisResult | null>(null);
-  const [history, setHistory] = usePersistedState<HistoryItem[]>("vf-history", SAMPLE_HISTORY);
+  const [token, setToken] = useState<string | null>(null);
+  const [verificationId, setVerificationId] = useState<string | null>(null);
+  const [messageDraft, setMessageDraft] = useState("");
   const appearance = useAppearance();
+  const history = useVerificationHistory(token ?? "", Boolean(token) && page === "history");
 
   useEffect(() => {
     window.scrollTo({ top: 0 });
@@ -28,12 +30,14 @@ export default function App() {
     if (id === "upload") setPage("upload");
   };
 
-  // a finished check: remember it, save it to History, open the result page
-  const handleAnalyzed = (r: AnalysisResult): void => {
-    setResult(r);
-    setHistory([{ id: r.id, title: r.title, type: r.source, risk: r.risk, createdAt: r.createdAt }, ...history]);
+  const handleSubmitted = (id: string): void => {
+    setVerificationId(id);
     setPage("result");
   };
+
+  if (!token) {
+    return <AuthPage onAuthenticated={setToken} />;
+  }
 
   // Paste, Upload and Result belong to Home, so Home stays highlighted
   const isHomeFlow = page === "paste" || page === "upload" || page === "result";
@@ -48,13 +52,13 @@ export default function App() {
 
       <div className="mx-auto w-full max-w-7xl">
         {page === "home" && <HomePage onSelectOption={handleOption} onViewAll={() => setPage("history")} />}
-        {page === "paste" && <PasteMessagePage onBack={goHome} onAnalyzed={handleAnalyzed} />}
-        {page === "upload" && <UploadPage onBack={goHome} onAnalyzed={handleAnalyzed} />}
-        {page === "result" && result && (
-          <ResultPage result={result} onBack={goHome} onViewHistory={() => setPage("history")} />
+        {page === "paste" && <PasteMessagePage token={token} initialText={messageDraft} onTextChange={setMessageDraft} onBack={goHome} onSubmitted={handleSubmitted} />}
+        {page === "upload" && <UploadPage token={token} onBack={goHome} onSubmitted={handleSubmitted} />}
+        {page === "result" && verificationId && (
+          <VerificationStatusPage verificationId={verificationId} token={token} onBack={goHome} onRetrySubmission={() => setPage("paste")} onViewHistory={() => setPage("history")} />
         )}
-        {page === "history" && <HistoryPage items={history} setItems={setHistory} onGoHome={goHome} />}
-        {page === "settings" && <SettingsPage appearance={appearance} />}
+        {page === "history" && <HistoryPage items={history.items} onGoHome={goHome} readOnly loading={history.isLoading} error={history.error} onRetry={history.retry} />}
+        {page === "settings" && <SettingsPage appearance={appearance} token={token} onLogout={() => { setToken(null); setPage("home"); }} />}
       </div>
 
       <BottomNav active={activeTab} onSelect={setPage} />

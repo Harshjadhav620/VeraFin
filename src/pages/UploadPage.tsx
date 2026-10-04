@@ -2,12 +2,12 @@ import { useEffect, useState } from "react";
 import PageHeader from "../components/PageHeader";
 import DropZone from "../components/DropZone";
 import ImagePreview from "../components/ImagePreview";
-import { analyzeImage } from "../api/mockAnalyze";
-import type { AnalysisResult } from "../types";
+import { useAnalyzeMessage } from "../hooks/useAnalyzeMessage";
 
 interface Props {
   onBack: () => void;
-  onAnalyzed: (result: AnalysisResult) => void;
+  token: string;
+  onSubmitted: (verificationId: string) => void;
 }
 
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
@@ -21,11 +21,12 @@ const TIPS = [
   "Hide your own private details (OTPs, card numbers) before uploading.",
 ];
 
-export default function UploadPage({ onBack, onAnalyzed }: Props) {
+export default function UploadPage({ onBack, token, onSubmitted }: Props) {
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [source, setSource] = useState("whatsapp");
+  const { submitImage, isLoading, error: requestError } = useAnalyzeMessage(token);
 
   // release the old preview URL when it changes, and when the page closes
   useEffect(() => {
@@ -56,16 +57,9 @@ export default function UploadPage({ onBack, onAnalyzed }: Props) {
 
   const upload = async (): Promise<void> => {
     if (!file) return;
-    setLoading(true);
     setError(null);
-    try {
-      const result = await analyzeImage(file);
-      onAnalyzed(result);
-    } catch {
-      setError("Something went wrong. Please try again.");
-    } finally {
-      setLoading(false);
-    }
+    const response = await submitImage(file, source);
+    if (response) onSubmitted(response.verification.id);
   };
 
   return (
@@ -96,22 +90,33 @@ export default function UploadPage({ onBack, onAnalyzed }: Props) {
             <DropZone onFileSelected={handleFile} maxSizeMb={MAX_SIZE_MB} />
           )}
 
-          {error && (
+          <label className="mt-4 block text-sm font-medium text-muted">
+            Image source
+            <select value={source} onChange={(event) => setSource(event.target.value)}
+              className="mt-4 w-full rounded-xl border border-line bg-card px-3 py-2.5 text-ink outline-none focus:border-brand">
+              <option value="whatsapp">WhatsApp</option>
+              <option value="telegram">Telegram</option>
+              <option value="sms">SMS</option>
+              <option value="other">Other</option>
+            </select>
+          </label>
+
+          {(error || requestError) && (
             <div role="alert" className="mt-4 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
-              {error}
+              {error ?? `Could not submit the image: ${requestError}`}
             </div>
           )}
 
           <button
             onClick={upload}
-            disabled={!file || loading}
+            disabled={!file || isLoading}
             className="mt-4 w-full rounded-full bg-linear-to-r from-brand to-violet-500 py-3.5 text-[15px] font-bold text-white
                        shadow-[0_0_30px_-6px_rgba(124,92,255,0.7)] transition duration-300
                        hover:scale-[1.02] hover:shadow-[0_0_44px_-4px_rgba(124,92,255,0.9)] active:scale-95
                        disabled:cursor-not-allowed disabled:bg-none disabled:bg-disabled disabled:text-muted disabled:shadow-none
                        disabled:hover:scale-100"
           >
-            {loading ? "Analyzing…" : "🔍 Analyze Screenshot"}
+            {isLoading ? "Submitting…" : "🔍 Analyze Screenshot"}
           </button>
         </section>
 
