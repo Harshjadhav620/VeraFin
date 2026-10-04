@@ -1,78 +1,58 @@
-# React + TypeScript + Vite
+# VeraFin
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+VeraFin is a frontend prototype for helping first-time and retail investors pause and check suspicious financial messages or promotions. It is designed to highlight possible scam warning signs and encourage verification with official sources. It does not provide stock tips or investment advice.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Home screen with entry points to check a pasted message or screenshot.
+- Message input screen with a sample message and scam safety reminders.
+- Screenshot upload screen with image preview and file validation (JPG, PNG, or WEBP, up to 10 MB).
+- History screen with search, image/text filters, individual deletion, and clear-all controls.
+- Settings screen with appearance, account, security, notification, support, and preference sections.
+- Responsive navigation and dark/light/system appearance options.
 
-## React Compiler
+The current project is a frontend prototype. Message and image analysis are not connected to a backend; the analyze actions show a placeholder message. Recent checks and safety advisories use sample content. History and appearance preferences are stored in browser `localStorage` on the current device.
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+## Tech stack
 
-Note: This will impact Vite dev & build performances.
-You can also try [the experimental native React Compiler support in plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md#rust-react-compiler) by using `compiler: true` in the plugin options instead of using the Babel plugin.
+- React 19
+- TypeScript
+- Vite
+- Tailwind CSS 4
+- React Compiler
 
-## Expanding the ESLint configuration
+## Getting started
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+Install the dependencies and start the development server:
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```bash
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+Vite prints the local development URL in the terminal.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Available scripts
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+| Command | Description |
+| --- | --- |
+| `npm run dev` | Start the Vite development server. |
+| `npm run build` | Type-check the project and create a production build in `dist/`. |
+| `npm run preview` | Preview the production build locally. |
+| `npm run lint` | Run ESLint across the project. |
 
+## Project structure
+
+```text
+src/
+├── components/       # Shared navigation, cards, form controls, and settings UI
+├── data/             # Sample history, navigation, scam advisories, and risk styles
+├── hooks/            # Persisted browser state and appearance preferences
+├── pages/            # Home, paste, upload, history, settings, and coming-soon screens
+├── utils/            # Date and history grouping helpers
+├── App.tsx           # Screen selection and app-level navigation
+├── index.css         # Global styles and theme tokens
+└── types.ts          # Shared TypeScript domain types
 ```
+
+Navigation is currently handled in app state rather than URL-based routing. To connect message or image analysis, implement the backend integration in the corresponding paste/upload flow and replace the current placeholder action.
