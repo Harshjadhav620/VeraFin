@@ -3,10 +3,10 @@ import PageHeader from "../components/PageHeader";
 import MessageInput from "../components/MessageInput";
 import ScamFooter from "../components/ScamFooter";
 import { SCAM_FACTS, SCAM_NEWS } from "../data/content";
-import { useAnalyzeMessage } from "../hooks/useAnalyzeMessage";
 
 interface Props {
   onBack: () => void;
+  onAnalyzed: (result: AnalysisResult) => void;
 }
 
 const SAMPLE =
@@ -14,13 +14,24 @@ const SAMPLE =
 
 const TRUST_CHIPS = ["🚩 Spots red flags", "🗣️ Plain-language results", "🚫 No investment advice"];
 
-export default function PasteMessagePage({ onBack }: Props) {
+export default function PasteMessagePage({ onBack, onAnalyzed }: Props) {
   const [text, setText] = useState<string>("");
-  const { analyzeMessage, isLoading, result, error } = useAnalyzeMessage();
-  const formattedResult = typeof result === "string" ? result : JSON.stringify(result, null, 2) ?? String(result);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const analyze = async (): Promise<void> => {
-    await analyzeMessage(text);
+    setLoading(true);
+    try {
+      // TODO: call your backend, then navigate to the Analysis Result page
+      // const res = await fetch("/api/analyze", {
+      //   method: "POST",
+      //   headers: { "Content-Type": "application/json" },
+      //   body: JSON.stringify({ text }),
+      // });
+      await new Promise((r) => setTimeout(r, 800));
+      alert("Analysis page goes here (next screen).");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -28,7 +39,7 @@ export default function PasteMessagePage({ onBack }: Props) {
       <PageHeader title="Back to home" onBack={onBack} />
 
       <div className="mt-6">
-        <h1 className="bg-linear-to-r from-heading to-brand bg-clip-text text-4xl font-bold leading-tight text-transparent max-md:text-2xl">
+        <h1 className="w-fit bg-linear-to-r from-heading to-brand bg-clip-text text-4xl font-bold leading-tight text-transparent max-md:text-2xl">
           Paste a message to check
         </h1>
         <p className="mt-2 max-w-xl text-[15px] leading-relaxed text-muted max-md:text-[13px]">
@@ -46,6 +57,12 @@ export default function PasteMessagePage({ onBack }: Props) {
       <div className="mt-8 grid grid-cols-[3fr_2fr] items-start gap-10 max-md:mt-6 max-md:grid-cols-1 max-md:gap-0">
         <section>
           <MessageInput value={text} onChange={setText} />
+
+          {error && (
+            <div role="alert" className="mt-4 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+              {error}
+            </div>
+          )}
 
           <button
             onClick={analyze}

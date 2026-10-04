@@ -2,9 +2,12 @@ import { useEffect, useState } from "react";
 import PageHeader from "../components/PageHeader";
 import DropZone from "../components/DropZone";
 import ImagePreview from "../components/ImagePreview";
+import { analyzeImage } from "../api/mockAnalyze";
+import type { AnalysisResult } from "../types";
 
 interface Props {
   onBack: () => void;
+  onAnalyzed: (result: AnalysisResult) => void;
 }
 
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
@@ -18,7 +21,7 @@ const TIPS = [
   "Hide your own private details (OTPs, card numbers) before uploading.",
 ];
 
-export default function UploadPage({ onBack }: Props) {
+export default function UploadPage({ onBack, onAnalyzed }: Props) {
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -54,13 +57,12 @@ export default function UploadPage({ onBack }: Props) {
   const upload = async (): Promise<void> => {
     if (!file) return;
     setLoading(true);
+    setError(null);
     try {
-      // TODO: send the image to your backend, then go to the Analysis Result page
-      // const formData = new FormData();
-      // formData.append("image", file);
-      // const res = await fetch("/api/analyze-image", { method: "POST", body: formData });
-      await new Promise((r) => setTimeout(r, 800));
-      alert("Analysis page goes here (next screen).");
+      const result = await analyzeImage(file);
+      onAnalyzed(result);
+    } catch {
+      setError("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
